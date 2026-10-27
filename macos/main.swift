@@ -6,7 +6,8 @@ import CoreServices
 let scale: CGFloat = 3
 let statusBarOffset: CGFloat = 26 // altura aprox. de la barra de estado de Zed: el gato camina encima
 let zedBundleIDs: Set<String> = ["dev.zed.Zed", "dev.zed.Zed-Preview"]
-let paletteName = "naranja"
+let palettePreference = ["naranja", "default"]
+let extraTop: CGFloat = 30 // espacio para burbujas
 let eventName = Notification.Name("local.zedpet.event")
 
 // MARK: - CLI: `zedpet <evento>` o `zedpet run <comando...>`
@@ -17,7 +18,7 @@ func send(_ event: String) {
 
 let cliArgs = Array(CommandLine.arguments.dropFirst())
 if let first = cliArgs.first {
-    guard first == "run" else { send(first); exit(0) }
+    guard first == "run" else { send(cliArgs.joined(separator: ":")); exit(0) } // `zedpet mascota grogu` → "mascota:grogu"
     let command = Array(cliArgs.dropFirst().drop { $0 == "--" })
     guard !command.isEmpty else { fputs("uso: zedpet run <comando...>\n", stderr); exit(2) }
     let p = Process()
@@ -30,26 +31,18 @@ if let first = cliArgs.first {
     exit(p.terminationStatus)
 }
 
-// MARK: - Sprites (compartidos con Windows en sprites/cat.json)
+// MARK: - Sprites (compartidos con Windows en sprites/*.json)
 
 struct SpriteSheet: Decodable {
     struct Anim: Decodable { let frames: [String]; let ticksPerFrame: Int }
+    let id: String
+    let name: String
     let width: Int
     let height: Int
     let palettes: [String: [String: String]]
     let blink: [String: String]
     let animations: [String: Anim]
     let frames: [String: [String]]
-
-    static func load() -> SpriteSheet {
-        let exe = URL(fileURLWithPath: CommandLine.arguments[0]).resolvingSymlinksInPath()
-        let candidates = [Bundle.main.url(forResource: "cat", withExtension: "json"),
-                          exe.deletingLastPathComponent().appendingPathComponent("../Resources/cat.json")]
-        for case let url? in candidates {
-            if let data = try? Data(contentsOf: url), let sheet = try? JSONDecoder().decode(SpriteSheet.self, from: data) { return sheet }
-        }
-        fatalError("No encontré sprites/cat.json")
-    }
 }
 
 extension NSColor {
@@ -59,16 +52,49 @@ extension NSColor {
     }
 }
 
-let sheet = SpriteSheet.load()
-let palette = (sheet.palettes[paletteName] ?? [:]).reduce(into: [Character: NSColor]()) { $0[Character($1.key)] = NSColor(hex: $1.value) }
-let blinkMap = sheet.blink.reduce(into: [Character: Character]()) { $0[Character($1.key)] = Character($1.value) }
-let spriteW = CGFloat(sheet.width) * scale
-let spriteH = CGFloat(sheet.height) * scale
-let extraTop: CGFloat = 30 // espacio para burbujas
+/// Una mascota lista para dibujar: sprites + paleta resuelta.
+struct Skin {
+    let sheet: SpriteSheet
+    let palette: [Character: NSColor]
+    let blink: [Character: Character]
+    var size: NSSize { NSSize(width: CGFloat(sheet.width) * scale, height: CGFloat(sheet.height) * scale + extraTop) }
+
+    init(_ sheet: SpriteSheet) {
+        self.sheet = sheet
+        let colors = palettePreference.lazy.compactMap { sheet.palettes[$0] }.first ?? sheet.palettes.values.first ?? [:]
+        palette = colors.reduce(into: [:]) { $0[Character($1.key)] = NSColor(hex: $1.value) }
+        blink = sheet.blink.reduce(into: [:]) { $0[Character($1.key)] = Character($1.value) }
+    }
+
+    // Si un personaje no trae alguna animación, usa la más parecida
+    static let fallback = ["run": "walk", "sit": "idle", "yawn": "idle", "stretch": "idle", "happy": "jump",
+                           "scared": "jump", "jump": "idle", "sleep": "idle", "idle": "walk"]
+
+    func frame(_ anim: String, _ t: Int) -> String {
+        var name = anim
+        while sheet.animations[name] == nil, let f = Skin.fallback[name] { name = f }
+        guard let a = sheet.animations[name] else { return sheet.frames.keys.first ?? "" }
+        return a.frames[(t / max(a.ticksPerFrame, 1)) % a.frames.count]
+    }
+
+    static func loadAll() -> [Skin] {
+        let dir = Bundle.main.resourceURL?.appendingPathComponent("pets")
+        let files = dir.flatMap { try? FileManager.default.contentsOfDirectory(at: $0, includingPropertiesForKeys: nil) } ?? []
+        let skins = files.filter { $0.pathExtension == "json" }
+            .compactMap { try? JSONDecoder().decode(SpriteSheet.self, from: Data(contentsOf: $0)) }
+            .map(Skin.init)
+            .sorted { ($0.sheet.id == "cat" ? 0 : 1, $0.sheet.name) < ($1.sheet.id == "cat" ? 0 : 1, $1.sheet.name) }
+        guard !skins.isEmpty else { fatalError("No encontré sprites en Resources/pets") }
+        return skins
+    }
+}
+
+let skins = Skin.loadAll()
 
 // MARK: - Vista
 
 final class PetView: NSView {
+    var skin = skins[0]
     var frameName = "walk1"
     var facingRight = true
     var blinking = false
@@ -79,11 +105,11 @@ final class PetView: NSView {
     override var isFlipped: Bool { true }
 
     override func draw(_ dirtyRect: NSRect) {
-        guard let rows = sheet.frames[frameName] else { return }
+        guard let rows = skin.sheet.frames[frameName] else { return }
         for (y, row) in rows.enumerated() {
             for (x, raw) in row.enumerated() {
-                let ch = blinking ? blinkMap[raw] ?? raw : raw
-                guard let color = palette[ch] else { continue }
+                let ch = blinking ? skin.blink[raw] ?? raw : raw
+                guard let color = skin.palette[ch] else { continue }
                 color.setFill()
                 let px = facingRight ? CGFloat(x) : CGFloat(row.count - 1 - x)
                 NSRect(x: px * scale, y: extraTop + CGFloat(y) * scale, width: scale, height: scale).fill()
@@ -91,7 +117,7 @@ final class PetView: NSView {
         }
         if let bubble {
             let attrs: [NSAttributedString.Key: Any] = [.font: NSFont.boldSystemFont(ofSize: 14), .foregroundColor: bubbleColor]
-            (bubble as NSString).draw(at: NSPoint(x: facingRight ? spriteW - 26 : 4, y: 4), withAttributes: attrs)
+            (bubble as NSString).draw(at: NSPoint(x: facingRight ? bounds.width - 26 : 4, y: 4), withAttributes: attrs)
         }
     }
 
@@ -153,8 +179,19 @@ final class Pet {
     var onlyWithZed = true
     var forcedSleep = false
 
+    var skin: Skin {
+        get { view.skin }
+        set {
+            view.skin = newValue
+            window.setContentSize(newValue.size)
+            UserDefaults.standard.set(newValue.sheet.id, forKey: "pet")
+        }
+    }
+
     init() {
-        window = NSPanel(contentRect: NSRect(x: 0, y: 0, width: spriteW, height: spriteH + extraTop),
+        let saved = UserDefaults.standard.string(forKey: "pet")
+        view.skin = skins.first { $0.sheet.id == saved } ?? skins[0]
+        window = NSPanel(contentRect: NSRect(origin: .zero, size: view.skin.size),
                          styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         window.isOpaque = false
         window.backgroundColor = .clear
@@ -173,6 +210,11 @@ final class Pet {
     // MARK: Eventos
 
     func handle(_ event: String) {
+        if event.hasPrefix("mascota:") {
+            let id = String(event.dropFirst("mascota:".count))
+            if let s = skins.first(where: { $0.sheet.id == id }) { skin = s; handle("feliz") }
+            return
+        }
         switch event {
         case "feliz", "acariciar": forcedSleep = false; jump(vy: 7, anim: "happy", bubble: "♥", color: .systemPink)
         case "exito", "ok": forcedSleep = false; jump(vy: 8, anim: "happy", bubble: "★", color: .systemYellow)
@@ -264,16 +306,14 @@ final class Pet {
             ?? NSScreen.main?.visibleFrame ?? .zero
 
         think(area)
-        x = min(max(x, area.minX), area.maxX - spriteW)
+        x = min(max(x, area.minX), area.maxX - window.frame.width)
         window.setFrameOrigin(NSPoint(x: x, y: area.minY + jumpY))
         if !window.isVisible { window.orderFrontRegardless() }
         render()
     }
 
     func render() {
-        if let a = sheet.animations[anim] {
-            view.frameName = a.frames[((tick - animStart) / max(a.ticksPerFrame, 1)) % a.frames.count]
-        }
+        view.frameName = skin.frame(anim, tick - animStart)
         if blinkTicks > 0 { blinkTicks -= 1 } else if mood != .sleeping, Int.random(in: 0..<120) == 0 { blinkTicks = 5 }
         view.blinking = blinkTicks > 0
         if bubbleTicks > 0 { bubbleTicks -= 1; if bubbleTicks == 0 { view.bubble = nil } }
@@ -287,7 +327,7 @@ final class Pet {
         switch mood {
         case .walking:
             x += view.facingRight ? speed : -speed
-            if x <= area.minX || x >= area.maxX - spriteW { view.facingRight.toggle() }
+            if x <= area.minX || x >= area.maxX - window.frame.width { view.facingRight.toggle() }
             if moodTicks > moodLength {
                 switch Int.random(in: 0..<20) {
                 case 0..<10: set(.idle, length: 30 * Int.random(in: 3...6))
@@ -331,6 +371,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         statusItem.button?.title = "🐱"
         let menu = NSMenu()
+        let pets = NSMenu()
+        for s in skins {
+            let i = item(s.sheet.name, #selector(choosePet), state: s.sheet.id == pet.skin.sheet.id)
+            i.representedObject = s.sheet.id
+            pets.addItem(i)
+        }
+        let petsItem = NSMenuItem(title: "Mascota", action: nil, keyEquivalent: "")
+        petsItem.submenu = pets
+        menu.addItem(petsItem)
+        menu.addItem(.separator())
         menu.addItem(item("Solo cuando Zed está activo", #selector(toggleZed), state: true))
         menu.addItem(item("Dormir / Despertar", #selector(toggleSleep)))
         menu.addItem(item("Acariciar", #selector(petIt)))
@@ -349,6 +399,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc func toggleZed(_ sender: NSMenuItem) {
         pet.onlyWithZed.toggle()
         sender.state = pet.onlyWithZed ? .on : .off
+    }
+    @objc func choosePet(_ sender: NSMenuItem) {
+        guard let id = sender.representedObject as? String else { return }
+        pet.handle("mascota:\(id)")
+        sender.menu?.items.forEach { $0.state = $0 === sender ? .on : .off }
     }
     @objc func toggleSleep() { pet.handle(pet.forcedSleep ? "despertar" : "dormir") }
     @objc func petIt() { pet.handle("feliz") }

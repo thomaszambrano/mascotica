@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Text;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using Microsoft.Win32;
 
@@ -16,7 +19,7 @@ static class Program
     {
         using (var mutex = new Mutex(true, "MatlabPet.SingleInstance", out bool first))
         {
-            if (!first) return; // ya hay un gato corriendo
+            if (!first) return; // ya hay una mascota corriendo
             Native.SetProcessDPIAware();
             Application.EnableVisualStyles();
             Application.Run(new PetForm(args.Contains("--con-matlab")));
@@ -45,61 +48,100 @@ static class Native
     }
 }
 
-enum Mood { Walking, Sitting, Sleeping, Jumping }
+// MARK: - Sprites (compartidos con macOS en sprites/*.json, van embebidos en el .exe)
+
+class Anim
+{
+    public string[] frames { get; set; }
+    public int ticksPerFrame { get; set; }
+}
+
+class SpriteSheet
+{
+    public string id { get; set; }
+    public string name { get; set; }
+    public int width { get; set; }
+    public int height { get; set; }
+    public Dictionary<string, Dictionary<string, string>> palettes { get; set; }
+    public Dictionary<string, string> blink { get; set; }
+    public Dictionary<string, Anim> animations { get; set; }
+    public Dictionary<string, string[]> frames { get; set; }
+}
+
+class Skin
+{
+    static readonly string[] PalettePreference = { "rosado", "default" };
+
+    // Si un personaje no trae alguna animación, usa la más parecida
+    static readonly Dictionary<string, string> Fallback = new Dictionary<string, string>
+    {
+        ["run"] = "walk", ["sit"] = "idle", ["yawn"] = "idle", ["stretch"] = "idle", ["happy"] = "jump",
+        ["scared"] = "jump", ["jump"] = "idle", ["sleep"] = "idle", ["idle"] = "walk",
+    };
+
+    public readonly SpriteSheet Sheet;
+    public readonly Dictionary<char, SolidBrush> Palette;
+    public readonly Dictionary<char, char> Blink;
+
+    public Skin(SpriteSheet sheet)
+    {
+        Sheet = sheet;
+        var colors = PalettePreference.Where(sheet.palettes.ContainsKey).Select(p => sheet.palettes[p]).FirstOrDefault()
+                     ?? sheet.palettes.Values.First();
+        Palette = colors.ToDictionary(kv => kv.Key[0], kv => new SolidBrush(ColorTranslator.FromHtml(kv.Value)));
+        Blink = (sheet.blink ?? new Dictionary<string, string>()).ToDictionary(kv => kv.Key[0], kv => kv.Value[0]);
+    }
+
+    public string Frame(string anim, int t)
+    {
+        while (!Sheet.animations.ContainsKey(anim) && Fallback.TryGetValue(anim, out var f)) anim = f;
+        if (!Sheet.animations.TryGetValue(anim, out var a)) return Sheet.frames.Keys.First();
+        return a.frames[t / Math.Max(a.ticksPerFrame, 1) % a.frames.Length];
+    }
+
+    public static List<Skin> LoadAll()
+    {
+        var asm = Assembly.GetExecutingAssembly();
+        var json = new JavaScriptSerializer();
+        return asm.GetManifestResourceNames()
+            .Where(n => n.StartsWith("pets."))
+            .Select(n =>
+            {
+                using (var r = new StreamReader(asm.GetManifestResourceStream(n)))
+                    return new Skin(json.Deserialize<SpriteSheet>(r.ReadToEnd()));
+            })
+            .OrderBy(k => k.Sheet.id == "cat" ? 0 : 1).ThenBy(k => k.Sheet.name)
+            .ToList();
+    }
+}
+
+enum Mood { Walking, Idle, Sleeping, OneShot, Airborne }
 
 class PetForm : Form
 {
-    // Mismo gato que la versión de macOS: mirando a la derecha, 20x12
-    static readonly string[] Body =
-    {
-        "..............k...k.",
-        ".............kok.kok",
-        ".k...........koooook",
-        ".k...........kooeoek",
-        "..k..........kooowpk",
-        "..k..kkkkkkkkkoooook",
-        "...kkooooooooooooook",
-        "....koooooooooooook.",
-        "....kowwwwwwwwwwok..",
-        "....kkkkkkkkkkkkk...",
-    };
-    static readonly string[] LegsA = { "....kk...kk..kk..kk.", "....kk...kk..kk..kk." };
-    static readonly string[] LegsB = { ".....kk.kk....kk.kk.", "......kkk......kkk.." };
-    static readonly string[] Tucked = { "....................", "...................." };
-
-    static readonly Dictionary<string, string[]> Frames = new Dictionary<string, string[]>
-    {
-        ["walk1"] = Body.Concat(LegsA).ToArray(),
-        ["walk2"] = Body.Concat(LegsB).ToArray(),
-        ["sit"] = Body.Concat(LegsA).ToArray(),
-        ["sleep"] = Tucked.Concat(Body.Select(r => r.Replace('e', 'k'))).ToArray(),
-    };
-
-    static readonly Dictionary<char, SolidBrush> Palette = new Dictionary<char, SolidBrush>
-    {
-        ['k'] = new SolidBrush(Color.FromArgb(20, 20, 20)),    // contorno negro
-        ['o'] = new SolidBrush(Color.FromArgb(255, 192, 214)), // rosado pastel
-        ['w'] = new SolidBrush(Color.FromArgb(255, 240, 246)),
-        ['p'] = new SolidBrush(Color.FromArgb(232, 96, 140)),  // nariz
-        ['e'] = new SolidBrush(Color.FromArgb(20, 20, 20)),
-    };
-
     static readonly string[] ProcessNames = { "MATLAB", "MATLABWindow" };
     const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
+    const string SettingsKey = @"Software\MatlabPet";
 
+    readonly List<Skin> skins = Skin.LoadAll();
     readonly int s, extraTop, statusBarOffset;
+    readonly float u; // velocidad escalada al DPI
     readonly Random rnd = new Random();
     readonly int ownPid = Process.GetCurrentProcess().Id;
     readonly NotifyIcon tray;
+    readonly ToolStripMenuItem petsMenu;
     readonly bool exitWithMatlab;
     bool seenMatlab;
     HashSet<int> matlabPids = new HashSet<int>();
     IntPtr target;
-    float x = 200, jumpY, vy, speed;
-    Mood mood = Mood.Walking;
-    int moodTicks, tick;
+
+    Skin skin;
+    float x = 200, jumpY, vy, vx, speed;
+    Mood mood = Mood.Walking, next = Mood.Walking;
+    int moodTicks, moodLength = 150, tick, animStart, blinkTicks, bubbleTicks;
     bool right = true, onlyWithMatlab = true, forcedSleep;
-    string frameName = "walk1", bubble;
+    string anim = "walk", frameName = "walk1", bubble;
+    Brush bubbleBrush = Brushes.HotPink;
 
     public PetForm(bool exitWithMatlab)
     {
@@ -107,9 +149,10 @@ class PetForm : Form
         float dpi;
         using (var g = CreateGraphics()) dpi = g.DpiX / 96f;
         s = Math.Max(2, (int)Math.Round(3 * dpi));
+        u = s / 3f;
         extraTop = 10 * s;
         statusBarOffset = (int)(22 * dpi); // altura aprox. de la barra de estado de MATLAB
-        speed = 0.55f * s;
+        speed = 1.6f * u;
 
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
@@ -117,22 +160,33 @@ class PetForm : Form
         StartPosition = FormStartPosition.Manual;
         BackColor = TransparencyKey = Color.Magenta;
         DoubleBuffered = true;
-        ClientSize = new Size(20 * s, 12 * s + extraTop);
-        MouseDown += (_, __) => Pet();
+        MouseDown += (_, __) => OnEvent("feliz");
 
         var menu = new ContextMenuStrip();
+        petsMenu = new ToolStripMenuItem("Mascota");
+        foreach (var k in skins)
+        {
+            var id = k.Sheet.id;
+            petsMenu.DropDownItems.Add(new ToolStripMenuItem(k.Sheet.name, null, (_, __) => OnEvent("mascota:" + id)) { Tag = id });
+        }
         var onlyItem = new ToolStripMenuItem("Solo cuando MATLAB está activo") { Checked = true, CheckOnClick = true };
         onlyItem.CheckedChanged += (_, __) => onlyWithMatlab = onlyItem.Checked;
         var startupItem = new ToolStripMenuItem("Iniciar con Windows") { Checked = StartupEnabled, CheckOnClick = true };
         startupItem.CheckedChanged += (_, __) => SetStartup(startupItem.Checked);
+        menu.Items.Add(petsMenu);
+        menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(onlyItem);
-        menu.Items.Add("Dormir / Despertar", null, (_, __) => ToggleSleep());
-        menu.Items.Add("Acariciar", null, (_, __) => Pet());
+        menu.Items.Add("Dormir / Despertar", null, (_, __) => OnEvent(forcedSleep ? "despertar" : "dormir"));
+        menu.Items.Add("Acariciar", null, (_, __) => OnEvent("feliz"));
         menu.Items.Add(startupItem);
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Salir", null, (_, __) => Quit());
-        tray = new NotifyIcon { Icon = TrayIcon(), Text = "Gatita de MATLAB", ContextMenuStrip = menu, Visible = true };
-        tray.MouseClick += (_, e) => { if (e.Button == MouseButtons.Left) Pet(); };
+        tray = new NotifyIcon { Text = "Mascota de MATLAB", ContextMenuStrip = menu, Visible = true };
+        tray.MouseClick += (_, e) => { if (e.Button == MouseButtons.Left) OnEvent("feliz"); };
+
+        string saved;
+        using (var k = Registry.CurrentUser.OpenSubKey(SettingsKey)) saved = k?.GetValue("pet") as string;
+        SetSkin(skins.FirstOrDefault(k => k.Sheet.id == saved) ?? skins[0]);
 
         var timer = new System.Windows.Forms.Timer { Interval = 33 };
         timer.Tick += (_, __) => UpdatePet();
@@ -151,13 +205,23 @@ class PetForm : Form
         }
     }
 
-    static Icon TrayIcon()
+    void SetSkin(Skin k)
     {
-        var bmp = new Bitmap(20, 20);
-        var rows = Frames["walk1"];
+        skin = k;
+        ClientSize = new Size(k.Sheet.width * s, k.Sheet.height * s + extraTop);
+        tray.Icon = TrayIcon(k);
+        foreach (ToolStripMenuItem i in petsMenu.DropDownItems) i.Checked = (string)i.Tag == k.Sheet.id;
+        using (var key = Registry.CurrentUser.CreateSubKey(SettingsKey)) key.SetValue("pet", k.Sheet.id);
+    }
+
+    static Icon TrayIcon(Skin k)
+    {
+        var rows = k.Sheet.frames[k.Frame("idle", 0)];
+        int size = Math.Max(k.Sheet.width, k.Sheet.height), ox = (size - k.Sheet.width) / 2, oy = (size - k.Sheet.height) / 2;
+        var bmp = new Bitmap(size, size);
         for (int y = 0; y < rows.Length; y++)
             for (int x = 0; x < rows[y].Length; x++)
-                if (Palette.TryGetValue(rows[y][x], out var b)) bmp.SetPixel(x, y + 4, b.Color);
+                if (k.Palette.TryGetValue(rows[y][x], out var b)) bmp.SetPixel(x + ox, y + oy, b.Color);
         return Icon.FromHandle(bmp.GetHicon());
     }
 
@@ -181,25 +245,78 @@ class PetForm : Form
         Application.Exit();
     }
 
-    void Pet()
+    // MARK: Eventos
+
+    void OnEvent(string ev)
     {
-        forcedSleep = false;
-        Change(Mood.Jumping);
-        vy = 2.3f * s;
-        bubble = "♥";
+        if (ev.StartsWith("mascota:"))
+        {
+            var k = skins.FirstOrDefault(x => x.Sheet.id == ev.Substring("mascota:".Length));
+            if (k != null) { SetSkin(k); OnEvent("feliz"); }
+            return;
+        }
+        switch (ev)
+        {
+            case "feliz": forcedSleep = false; Jump(7, "happy", "♥", Brushes.HotPink); break;
+            case "exito": forcedSleep = false; Jump(8, "happy", "★", Brushes.Gold); break;
+            case "error": forcedSleep = false; Jump(5, "scared", "!", Brushes.Red, right ? -2 : 2, Mood.Idle); break;
+            case "dormir": forcedSleep = true; break;
+            case "despertar": forcedSleep = false; Play("stretch", 45, Mood.Walking); break;
+        }
     }
 
-    void ToggleSleep()
+    void Jump(float v, string a, string text, Brush color, float dx = 0, Mood then = Mood.Walking)
     {
-        forcedSleep = !forcedSleep;
-        if (!forcedSleep) { bubble = null; Change(Mood.Walking); }
+        vy = v * u;
+        vx = dx * u;
+        anim = a;
+        next = then;
+        Say(text, color, 40);
+        Set(Mood.Airborne, int.MaxValue);
     }
+
+    void Play(string a, int ticks, Mood then)
+    {
+        anim = a;
+        next = then;
+        Set(Mood.OneShot, ticks);
+    }
+
+    void Say(string text, Brush color, int ticks)
+    {
+        bubble = text;
+        bubbleBrush = color;
+        bubbleTicks = ticks;
+    }
+
+    void Set(Mood m, int length)
+    {
+        mood = m;
+        moodTicks = 0;
+        moodLength = length;
+        animStart = tick;
+        switch (m)
+        {
+            case Mood.Walking:
+                bool running = rnd.Next(5) == 0;
+                speed = (running ? 3.5f : 1.6f) * u;
+                anim = running ? "run" : "walk";
+                if (rnd.Next(2) == 0) right = !right;
+                break;
+            case Mood.Idle: anim = "idle"; break;
+            case Mood.Sleeping: anim = "sleep"; break;
+        }
+    }
+
+    int WalkLength() => 30 * rnd.Next(4, 11);
+
+    // MARK: Ventana de MATLAB
 
     void RefreshMatlab()
     {
         var procs = ProcessNames.SelectMany(Process.GetProcessesByName).ToList();
         matlabPids = new HashSet<int>(procs.Select(p => p.Id));
-        // Lanzado desde startup.m: se va a dormir de verdad cuando MATLAB se cierra
+        // Lanzado desde startup.m: se va de verdad cuando MATLAB se cierra
         if (matlabPids.Count > 0) seenMatlab = true;
         else if (exitWithMatlab && seenMatlab) Quit();
         if (target == IntPtr.Zero)
@@ -239,56 +356,77 @@ class PetForm : Form
         x = Math.Min(Math.Max(x, area.Left), area.Right - Width);
         Location = new Point((int)x, (int)(floor - Height - jumpY));
         if (!Visible) Show();
+        Render();
+    }
+
+    void Render()
+    {
+        frameName = skin.Frame(anim, tick - animStart);
+        if (blinkTicks > 0) blinkTicks--;
+        else if (mood != Mood.Sleeping && rnd.Next(120) == 0) blinkTicks = 5;
+        if (bubbleTicks > 0 && --bubbleTicks == 0) bubble = null;
         Invalidate();
     }
 
     void Think(int minX, int maxX)
     {
         moodTicks++;
-        if (forcedSleep && mood != Mood.Jumping) mood = Mood.Sleeping;
+        if (forcedSleep && mood != Mood.Sleeping && mood != Mood.Airborne) Set(Mood.Sleeping, int.MaxValue);
 
         switch (mood)
         {
             case Mood.Walking:
                 x += right ? speed : -speed;
                 if (x <= minX || x >= maxX - Width) right = !right;
-                frameName = (tick / 6) % 2 == 0 ? "walk1" : "walk2";
-                if (moodTicks > 30 * rnd.Next(4, 11)) Change(rnd.Next(4) == 0 ? Mood.Sleeping : Mood.Sitting);
+                if (moodTicks > moodLength)
+                {
+                    int r = rnd.Next(20);
+                    if (r < 10) Set(Mood.Idle, 30 * rnd.Next(3, 7));
+                    else if (r < 13) Set(Mood.Sleeping, 30 * rnd.Next(10, 21));
+                    else if (r < 16) Play("yawn", 40, Mood.Idle);
+                    else if (r < 18) Play("stretch", 45, Mood.Walking);
+                    else Set(Mood.Walking, WalkLength());
+                }
                 break;
-            case Mood.Sitting:
-                frameName = "sit";
-                if (moodTicks > 30 * 3) Change(Mood.Walking);
+            case Mood.Idle:
+                if (moodTicks > moodLength)
+                {
+                    if (rnd.Next(4) == 0) Play("yawn", 40, Mood.Walking);
+                    else Set(Mood.Walking, WalkLength());
+                }
                 break;
             case Mood.Sleeping:
-                frameName = "sleep";
-                bubble = new[] { "z", "zZ", "zZz" }[(tick / 20) % 3];
-                if (!forcedSleep && moodTicks > 30 * 12) { bubble = null; Change(Mood.Walking); }
+                Say(new[] { "z", "zZ", "zZz" }[(tick / 20) % 3], Brushes.Gray, 2);
+                if (!forcedSleep && moodTicks > moodLength) Play("stretch", 45, Mood.Walking);
                 break;
-            case Mood.Jumping:
+            case Mood.OneShot:
+                if (moodTicks > moodLength) Set(next, next == Mood.Idle ? 90 : WalkLength());
+                break;
+            case Mood.Airborne:
                 jumpY += vy;
-                vy -= 0.2f * s;
-                if (jumpY <= 0) { jumpY = 0; bubble = null; Change(Mood.Walking); }
+                x += vx;
+                vy -= 0.6f * u;
+                if (jumpY <= 0)
+                {
+                    jumpY = 0;
+                    vx = 0;
+                    if (next == Mood.Idle) Play("sit", 60, Mood.Walking);
+                    else Set(next, WalkLength());
+                }
                 break;
         }
-    }
-
-    void Change(Mood m)
-    {
-        mood = m;
-        moodTicks = 0;
-        if (m != Mood.Walking) return;
-        speed = (rnd.Next(5) == 0 ? 1.2f : 0.55f) * s;
-        if (rnd.Next(2) == 0) right = !right;
     }
 
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
-        var rows = Frames[frameName];
+        if (!skin.Sheet.frames.TryGetValue(frameName, out var rows)) return;
         for (int y = 0; y < rows.Length; y++)
             for (int x = 0; x < rows[y].Length; x++)
             {
-                if (!Palette.TryGetValue(rows[y][x], out var brush)) continue;
+                var ch = rows[y][x];
+                if (blinkTicks > 0 && skin.Blink.TryGetValue(ch, out var closed)) ch = closed;
+                if (!skin.Palette.TryGetValue(ch, out var brush)) continue;
                 int px = right ? x : rows[y].Length - 1 - x;
                 g.FillRectangle(brush, px * s, extraTop + y * s, s, s);
             }
@@ -296,6 +434,6 @@ class PetForm : Form
         // Sin antialiasing: el borde suavizado se vería rosa por el TransparencyKey
         g.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
         using (var font = new Font("Segoe UI", 11, FontStyle.Bold))
-            g.DrawString(bubble, font, Brushes.HotPink, right ? Width - 8 * s : s, 0);
+            g.DrawString(bubble, font, bubbleBrush, right ? Width - 8 * s : s, 0);
     }
 }

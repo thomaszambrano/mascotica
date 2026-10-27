@@ -1,0 +1,280 @@
+{
+  "id": "ironman",
+  "name": "Iron Man",
+  "width": 12,
+  "height": 15,
+  "palettes": {
+    "default": {
+      "k": "#1A1012",
+      "r": "#B3202A",
+      "y": "#E8B13A",
+      "e": "#BFF7FF",
+      "a": "#7DF3FF",
+      "f": "#FF9A2E",
+      "w": "#FFFFFF"
+    }
+  },
+  "blink": {
+    "e": "y"
+  },
+  "animations": {
+    "walk": {
+      "frames": [
+        "walk1",
+        "walk2",
+        "walk3",
+        "walk4"
+      ],
+      "ticksPerFrame": 5
+    },
+    "run": {
+      "frames": [
+        "walk1",
+        "walk2",
+        "walk3",
+        "walk4"
+      ],
+      "ticksPerFrame": 2
+    },
+    "idle": {
+      "frames": [
+        "idle",
+        "idle2"
+      ],
+      "ticksPerFrame": 16
+    },
+    "sit": {
+      "frames": [
+        "idle",
+        "idle2"
+      ],
+      "ticksPerFrame": 20
+    },
+    "sleep": {
+      "frames": [
+        "sleep",
+        "sleep2"
+      ],
+      "ticksPerFrame": 40
+    },
+    "yawn": {
+      "frames": [
+        "sleep"
+      ],
+      "ticksPerFrame": 1
+    },
+    "stretch": {
+      "frames": [
+        "happy"
+      ],
+      "ticksPerFrame": 1
+    },
+    "jump": {
+      "frames": [
+        "jump"
+      ],
+      "ticksPerFrame": 1
+    },
+    "happy": {
+      "frames": [
+        "happy"
+      ],
+      "ticksPerFrame": 1
+    },
+    "scared": {
+      "frames": [
+        "scared"
+      ],
+      "ticksPerFrame": 1
+    }
+  },
+  "frames": {
+    "walk1": [
+      "...kkkkkk...",
+      "..krrrrrrk..",
+      ".krryyyyrrk.",
+      ".kryyyyyyrk.",
+      ".kreeyyeerk.",
+      ".krykyykyrk.",
+      "..kryyyyrk..",
+      "kkrrrrrrrrkk",
+      "krrryaayrrrk",
+      "kyrrrrrrrryk",
+      "kyrryyyyrryk",
+      ".krrrrrrrrk.",
+      ".kyyrrrryyk.",
+      "..krrkkrrk..",
+      "..krrkkrrk.."
+    ],
+    "walk2": [
+      "...kkkkkk...",
+      "..krrrrrrk..",
+      ".krryyyyrrk.",
+      ".kryyyyyyrk.",
+      ".kreeyyeerk.",
+      ".krykyykyrk.",
+      "..kryyyyrk..",
+      "kkrrrrrrrrkk",
+      "krrryaayrrrk",
+      "kyrrrrrrrryk",
+      "kyrryyyyrryk",
+      ".krrrrrrrrk.",
+      ".kyyrrrryyk.",
+      "...krrkrrk..",
+      "..krrk..krrk"
+    ],
+    "walk3": [
+      "...kkkkkk...",
+      "..krrrrrrk..",
+      ".krryyyyrrk.",
+      ".kryyyyyyrk.",
+      ".kreeyyeerk.",
+      ".krykyykyrk.",
+      "..kryyyyrk..",
+      "kkrrrrrrrrkk",
+      "krrryaayrrrk",
+      "kyrrrrrrrryk",
+      "kyrryyyyrryk",
+      ".krrrrrrrrk.",
+      ".kyyrrrryyk.",
+      "..krrkkrrk..",
+      "..krrkkrrk.."
+    ],
+    "walk4": [
+      "...kkkkkk...",
+      "..krrrrrrk..",
+      ".krryyyyrrk.",
+      ".kryyyyyyrk.",
+      ".kreeyyeerk.",
+      ".krykyykyrk.",
+      "..kryyyyrk..",
+      "kkrrrrrrrrkk",
+      "krrryaayrrrk",
+      "kyrrrrrrrryk",
+      "kyrryyyyrryk",
+      ".krrrrrrrrk.",
+      ".kyyrrrryyk.",
+      "..krrkkrrk..",
+      "..kffkkffk.."
+    ],
+    "idle": [
+      "...kkkkkk...",
+      "..krrrrrrk..",
+      ".krryyyyrrk.",
+      ".kryyyyyyrk.",
+      ".kreeyyeerk.",
+      ".krykyykyrk.",
+      "..kryyyyrk..",
+      "kkrrrrrrrrkk",
+      "krrryaayrrrk",
+      "kyrrrrrrrryk",
+      "kyrryyyyrryk",
+      ".krrrrrrrrk.",
+      ".kyyrrrryyk.",
+      "..krrkkrrk..",
+      "..krrkkrrk.."
+    ],
+    "idle2": [
+      "............",
+      "...kkkkkk...",
+      "..krrrrrrk..",
+      ".krryyyyrrk.",
+      ".kryyyyyyrk.",
+      ".kreeyyeerk.",
+      ".krykyykyrk.",
+      "..kryyyyrk..",
+      "kkrrrrrrrrkk",
+      "krrryaayrrrk",
+      "kyrrrrrrrryk",
+      "kyrryyyyrryk",
+      ".krrrrrrrrk.",
+      ".kyyrrrryyk.",
+      "..krrkkrrk.."
+    ],
+    "sleep": [
+      "............",
+      "...kkkkkk...",
+      "..krrrrrrk..",
+      ".krryyyyrrk.",
+      ".kryyyyyyrk.",
+      ".kryyyyyyrk.",
+      ".krykyykyrk.",
+      "..kryyyyrk..",
+      "kkrrrrrrrrkk",
+      "krrryrryrrrk",
+      "kyrrrrrrrryk",
+      "kyrryyyyrryk",
+      ".krrrrrrrrk.",
+      ".kyyrrrryyk.",
+      "..krrkkrrk.."
+    ],
+    "sleep2": [
+      "............",
+      "............",
+      "...kkkkkk...",
+      "..krrrrrrk..",
+      ".krryyyyrrk.",
+      ".kryyyyyyrk.",
+      ".kryyyyyyrk.",
+      ".krykyykyrk.",
+      "..kryyyyrk..",
+      "kkrrrrrrrrkk",
+      "krrryrryrrrk",
+      "kyrrrrrrrryk",
+      "kyrryyyyrryk",
+      ".krrrrrrrrk.",
+      ".kyyrrrryyk."
+    ],
+    "jump": [
+      "...kkkkkk...",
+      "..krrrrrrk..",
+      ".krryyyyrrk.",
+      ".kryyyyyyrk.",
+      ".kreeyyeerk.",
+      ".krykyykyrk.",
+      "..kryyyyrk..",
+      "kkrrrrrrrrkk",
+      "krrryaayrrrk",
+      "kyrrrrrrrryk",
+      "kyrryyyyrryk",
+      ".krrrrrrrrk.",
+      ".kyyrrrryyk.",
+      "..krrkkrrk..",
+      "..kffkkffk.."
+    ],
+    "happy": [
+      "...kkkkkk...",
+      "..krrrrrrk..",
+      ".krryyyyrrk.",
+      ".kryyyyyyrk.",
+      ".kreeyyeerk.",
+      ".krykyykyrk.",
+      "..kryyyyrk..",
+      "kkrrrrrrrrkk",
+      "krrryaayrrrk",
+      "kyrrrrrrrryk",
+      "kyrryyyyrryk",
+      ".krrrrrrrrk.",
+      ".kyyrrrryyk.",
+      "..krrkkrrk..",
+      "..kffkkffk.."
+    ],
+    "scared": [
+      "...kkkkkk...",
+      "..krrrrrrk..",
+      ".krryyyyrrk.",
+      ".kryyyyyyrk.",
+      ".krwwyywwrk.",
+      ".krykyykyrk.",
+      "..kryyyyrk..",
+      "kkrrrrrrrrkk",
+      "krrryaayrrrk",
+      "kyrrrrrrrryk",
+      "kyrryyyyrryk",
+      ".krrrrrrrrk.",
+      ".kyyrrrryyk.",
+      "..krrkkrrk..",
+      "..kffkkffk.."
+    ]
+  }
+}

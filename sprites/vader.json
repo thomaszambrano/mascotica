@@ -1,0 +1,279 @@
+{
+  "id": "vader",
+  "name": "Darth Vader",
+  "width": 12,
+  "height": 15,
+  "palettes": {
+    "default": {
+      "k": "#0B0B0E",
+      "d": "#3A3D46",
+      "s": "#9AA0AA",
+      "e": "#5A2328",
+      "r": "#FF3B30",
+      "g": "#3DDC84",
+      "b": "#2F7BFF",
+      "c": "#2A2140"
+    }
+  },
+  "blink": {},
+  "animations": {
+    "walk": {
+      "frames": [
+        "walk1",
+        "walk2",
+        "walk3",
+        "walk4"
+      ],
+      "ticksPerFrame": 5
+    },
+    "run": {
+      "frames": [
+        "walk1",
+        "walk2",
+        "walk3",
+        "walk4"
+      ],
+      "ticksPerFrame": 2
+    },
+    "idle": {
+      "frames": [
+        "idle",
+        "idle2"
+      ],
+      "ticksPerFrame": 16
+    },
+    "sit": {
+      "frames": [
+        "idle",
+        "idle2"
+      ],
+      "ticksPerFrame": 20
+    },
+    "sleep": {
+      "frames": [
+        "sleep",
+        "sleep2"
+      ],
+      "ticksPerFrame": 40
+    },
+    "yawn": {
+      "frames": [
+        "sleep"
+      ],
+      "ticksPerFrame": 1
+    },
+    "stretch": {
+      "frames": [
+        "happy"
+      ],
+      "ticksPerFrame": 1
+    },
+    "jump": {
+      "frames": [
+        "jump"
+      ],
+      "ticksPerFrame": 1
+    },
+    "happy": {
+      "frames": [
+        "happy"
+      ],
+      "ticksPerFrame": 1
+    },
+    "scared": {
+      "frames": [
+        "scared"
+      ],
+      "ticksPerFrame": 1
+    }
+  },
+  "frames": {
+    "walk1": [
+      "...kkkkkk...",
+      "..kddddddk..",
+      ".kddddddddk.",
+      ".kdeekkeedk.",
+      ".kddksskddk.",
+      "kkdksssskdkk",
+      "kdddkkkkdddk",
+      "ckkkkkkkkkkc",
+      "ckkrgbbgrkkc",
+      "ckkkkkkkkkkc",
+      "ckksssssskkc",
+      "ckkkkkkkkkkc",
+      "cckkk..kkkcc",
+      "c.kkk..kkk.c",
+      "..kkk..kkk.."
+    ],
+    "walk2": [
+      "...kkkkkk...",
+      "..kddddddk..",
+      ".kddddddddk.",
+      ".kdeekkeedk.",
+      ".kddksskddk.",
+      "kkdksssskdkk",
+      "kdddkkkkdddk",
+      "ckkkkkkkkkkc",
+      "ckkrgbbgrkkc",
+      "ckkkkkkkkkkc",
+      "ckksssssskkc",
+      "ckkkkkkkkkkc",
+      "cckkk..kkkcc",
+      "c..kkkkkk..c",
+      "...kk..kk..."
+    ],
+    "walk3": [
+      "...kkkkkk...",
+      "..kddddddk..",
+      ".kddddddddk.",
+      ".kdeekkeedk.",
+      ".kddksskddk.",
+      "kkdksssskdkk",
+      "kdddkkkkdddk",
+      "ckkkkkkkkkkc",
+      "ckkrgbbgrkkc",
+      "ckkkkkkkkkkc",
+      "ckksssssskkc",
+      "ckkkkkkkkkkc",
+      "cckkk..kkkcc",
+      "c.kkk..kkk.c",
+      "..kkk..kkk.."
+    ],
+    "walk4": [
+      "...kkkkkk...",
+      "..kddddddk..",
+      ".kddddddddk.",
+      ".kdeekkeedk.",
+      ".kddksskddk.",
+      "kkdksssskdkk",
+      "kdddkkkkdddk",
+      "ckkkkkkkkkkc",
+      "ckkrgbbgrkkc",
+      "ckkkkkkkkkkc",
+      "ckksssssskkc",
+      "ckkkkkkkkkkc",
+      "cckkk..kkkcc",
+      "c.kkk..kkk.c",
+      ".kkk....kkk."
+    ],
+    "idle": [
+      "...kkkkkk...",
+      "..kddddddk..",
+      ".kddddddddk.",
+      ".kdeekkeedk.",
+      ".kddksskddk.",
+      "kkdksssskdkk",
+      "kdddkkkkdddk",
+      "ckkkkkkkkkkc",
+      "ckkrgbbgrkkc",
+      "ckkkkkkkkkkc",
+      "ckksssssskkc",
+      "ckkkkkkkkkkc",
+      "cckkk..kkkcc",
+      "c.kkk..kkk.c",
+      "..kkk..kkk.."
+    ],
+    "idle2": [
+      "............",
+      "...kkkkkk...",
+      "..kddddddk..",
+      ".kddddddddk.",
+      ".kdeekkeedk.",
+      ".kddksskddk.",
+      "kkdksssskdkk",
+      "kdddkkkkdddk",
+      "ckkkkkkkkkkc",
+      "ckkrgbbgrkkc",
+      "ckkkkkkkkkkc",
+      "ckksssssskkc",
+      "ckkkkkkkkkkc",
+      "cckkk..kkkcc",
+      "c.kkk..kkk.c"
+    ],
+    "sleep": [
+      "............",
+      "...kkkkkk...",
+      "..kddddddk..",
+      ".kddddddddk.",
+      ".kdeekkeedk.",
+      ".kddksskddk.",
+      "kkdksssskdkk",
+      "kdddkkkkdddk",
+      "ckkkkkkkkkkc",
+      "ckkrgbbgrkkc",
+      "ckkkkkkkkkkc",
+      "ckksssssskkc",
+      "ckkkkkkkkkkc",
+      "cckkk..kkkcc",
+      "c.kkk..kkk.c"
+    ],
+    "sleep2": [
+      "............",
+      "............",
+      "...kkkkkk...",
+      "..kddddddk..",
+      ".kddddddddk.",
+      ".kdeekkeedk.",
+      ".kddksskddk.",
+      "kkdksssskdkk",
+      "kdddkkkkdddk",
+      "ckkkkkkkkkkc",
+      "ckkrgbbgrkkc",
+      "ckkkkkkkkkkc",
+      "ckksssssskkc",
+      "ckkkkkkkkkkc",
+      "cckkk..kkkcc"
+    ],
+    "jump": [
+      "...kkkkkk...",
+      "..kddddddk..",
+      ".kddddddddk.",
+      ".kdeekkeedk.",
+      ".kddksskddk.",
+      "kkdksssskdkk",
+      "kdddkkkkdddk",
+      "ckkkkkkkkkkc",
+      "ckkrgbbgrkkc",
+      "ckkkkkkkkkkc",
+      "ckksssssskkc",
+      "ckkkkkkkkkkc",
+      "cckkk..kkkcc",
+      "c.kkk..kkk.c",
+      ".kkk....kkk."
+    ],
+    "happy": [
+      "...kkkkkk...",
+      "..kddddddk..",
+      ".kddddddddk.",
+      ".kdeekkeedk.",
+      ".kddksskddk.",
+      "kkdksssskdkk",
+      "kdddkkkkdddk",
+      "dkkkkkkkkkkd",
+      "dkkrgbbgrkkd",
+      "ckkkkkkkkkkc",
+      "ckksssssskkc",
+      "ckkkkkkkkkkc",
+      "cckkk..kkkcc",
+      "c.kkk..kkk.c",
+      ".kkk....kkk."
+    ],
+    "scared": [
+      "...kkkkkk...",
+      "..kddddddk..",
+      ".kddddddddk.",
+      ".kdrrkkrrdk.",
+      ".kddksskddk.",
+      "kkdksssskdkk",
+      "kdddkkkkdddk",
+      "ckkkkkkkkkkc",
+      "ckkrgbbgrkkc",
+      "ckkkkkkkkkkc",
+      "ckksssssskkc",
+      "ckkkkkkkkkkc",
+      "cckkk..kkkcc",
+      "c.kkk..kkk.c",
+      ".kkk....kkk."
+    ]
+  }
+}

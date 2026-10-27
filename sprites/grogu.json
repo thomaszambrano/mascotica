@@ -1,0 +1,259 @@
+{
+  "id": "grogu",
+  "name": "Grogu",
+  "width": 16,
+  "height": 13,
+  "palettes": {
+    "default": {
+      "k": "#1B2414",
+      "g": "#8DB86B",
+      "p": "#D9A07A",
+      "e": "#111111",
+      "f": "#111111",
+      "b": "#A47A52",
+      "w": "#FFFFFF"
+    }
+  },
+  "blink": {
+    "e": "g",
+    "f": "k"
+  },
+  "animations": {
+    "walk": {
+      "frames": [
+        "walk1",
+        "walk2",
+        "walk3",
+        "walk4"
+      ],
+      "ticksPerFrame": 5
+    },
+    "run": {
+      "frames": [
+        "walk1",
+        "walk2",
+        "walk3",
+        "walk4"
+      ],
+      "ticksPerFrame": 2
+    },
+    "idle": {
+      "frames": [
+        "idle",
+        "idle2"
+      ],
+      "ticksPerFrame": 16
+    },
+    "sit": {
+      "frames": [
+        "idle",
+        "idle2"
+      ],
+      "ticksPerFrame": 20
+    },
+    "sleep": {
+      "frames": [
+        "sleep",
+        "sleep2"
+      ],
+      "ticksPerFrame": 40
+    },
+    "yawn": {
+      "frames": [
+        "sleep"
+      ],
+      "ticksPerFrame": 1
+    },
+    "stretch": {
+      "frames": [
+        "happy"
+      ],
+      "ticksPerFrame": 1
+    },
+    "jump": {
+      "frames": [
+        "jump"
+      ],
+      "ticksPerFrame": 1
+    },
+    "happy": {
+      "frames": [
+        "happy"
+      ],
+      "ticksPerFrame": 1
+    },
+    "scared": {
+      "frames": [
+        "scared"
+      ],
+      "ticksPerFrame": 1
+    }
+  },
+  "frames": {
+    "walk1": [
+      ".....kkkkkk.....",
+      "....kggggggk....",
+      "kkk.kggggggk.kkk",
+      "kpggkggggggkggpk",
+      ".kggggeggeggggk.",
+      "..kkggfggfggkk..",
+      "....kggggggk....",
+      "...kbbbbbbbbk...",
+      "..kbbbbbbbbbbk..",
+      "..kgbbbbbbbbgk..",
+      "..kbbbbbbbbbbk..",
+      "...kkkkkkkkkk...",
+      "....kk....kk...."
+    ],
+    "walk2": [
+      ".....kkkkkk.....",
+      "....kggggggk....",
+      "kkk.kggggggk.kkk",
+      "kpggkggggggkggpk",
+      ".kggggeggeggggk.",
+      "..kkggfggfggkk..",
+      "....kggggggk....",
+      "...kbbbbbbbbk...",
+      "..kbbbbbbbbbbk..",
+      "..kgbbbbbbbbgk..",
+      "..kbbbbbbbbbbk..",
+      "...kkkkkkkkkk...",
+      ".....kk..kk....."
+    ],
+    "walk3": [
+      ".....kkkkkk.....",
+      "....kggggggk....",
+      "kkk.kggggggk.kkk",
+      "kpggkggggggkggpk",
+      ".kggggeggeggggk.",
+      "..kkggfggfggkk..",
+      "....kggggggk....",
+      "...kbbbbbbbbk...",
+      "..kbbbbbbbbbbk..",
+      "..kgbbbbbbbbgk..",
+      "..kbbbbbbbbbbk..",
+      "...kkkkkkkkkk...",
+      "....kk....kk...."
+    ],
+    "walk4": [
+      ".....kkkkkk.....",
+      "....kggggggk....",
+      "kkk.kggggggk.kkk",
+      "kpggkggggggkggpk",
+      ".kggggeggeggggk.",
+      "..kkggfggfggkk..",
+      "....kggggggk....",
+      "...kbbbbbbbbk...",
+      "..kbbbbbbbbbbk..",
+      "..kgbbbbbbbbgk..",
+      "..kbbbbbbbbbbk..",
+      "...kkkkkkkkkk...",
+      "...kk......kk..."
+    ],
+    "idle": [
+      ".....kkkkkk.....",
+      "....kggggggk....",
+      "kkk.kggggggk.kkk",
+      "kpggkggggggkggpk",
+      ".kggggeggeggggk.",
+      "..kkggfggfggkk..",
+      "....kggggggk....",
+      "...kbbbbbbbbk...",
+      "..kbbbbbbbbbbk..",
+      "..kgbbbbbbbbgk..",
+      "..kbbbbbbbbbbk..",
+      "...kkkkkkkkkk...",
+      "....kk....kk...."
+    ],
+    "idle2": [
+      "................",
+      ".....kkkkkk.....",
+      "....kggggggk....",
+      "kkk.kggggggk.kkk",
+      "kpggkggggggkggpk",
+      ".kggggeggeggggk.",
+      "..kkggfggfggkk..",
+      "....kggggggk....",
+      "...kbbbbbbbbk...",
+      "..kbbbbbbbbbbk..",
+      "..kgbbbbbbbbgk..",
+      "..kbbbbbbbbbbk..",
+      "...kkkkkkkkkk..."
+    ],
+    "sleep": [
+      "................",
+      ".....kkkkkk.....",
+      "....kggggggk....",
+      "kkk.kggggggk.kkk",
+      "kpggkggggggkggpk",
+      ".kggggggggggggk.",
+      "..kkggkggkggkk..",
+      "....kggggggk....",
+      "...kbbbbbbbbk...",
+      "..kbbbbbbbbbbk..",
+      "..kgbbbbbbbbgk..",
+      "..kbbbbbbbbbbk..",
+      "...kkkkkkkkkk..."
+    ],
+    "sleep2": [
+      "................",
+      "................",
+      ".....kkkkkk.....",
+      "....kggggggk....",
+      "kkk.kggggggk.kkk",
+      "kpggkggggggkggpk",
+      ".kggggggggggggk.",
+      "..kkggkggkggkk..",
+      "....kggggggk....",
+      "...kbbbbbbbbk...",
+      "..kbbbbbbbbbbk..",
+      "..kgbbbbbbbbgk..",
+      "..kbbbbbbbbbbk.."
+    ],
+    "jump": [
+      ".....kkkkkk.....",
+      "....kggggggk....",
+      "kkk.kggggggk.kkk",
+      "kpggkggggggkggpk",
+      ".kggggeggeggggk.",
+      "..kkggfggfggkk..",
+      "....kggggggk....",
+      "...kbbbbbbbbk...",
+      "..kbbbbbbbbbbk..",
+      "..kgbbbbbbbbgk..",
+      "..kbbbbbbbbbbk..",
+      "...kkkkkkkkkk...",
+      "...kk......kk..."
+    ],
+    "happy": [
+      ".....kkkkkk.....",
+      "....kggggggk....",
+      "kkk.kggggggk.kkk",
+      "kpggkggggggkggpk",
+      ".kggggggggggggk.",
+      "..kkggkggkggkk..",
+      "....kggggggk....",
+      "..kgbbbbbbbbgk..",
+      "...kbbbbbbbbk...",
+      "..kbbbbbbbbbbk..",
+      "..kbbbbbbbbbbk..",
+      "...kkkkkkkkkk...",
+      "...kk......kk..."
+    ],
+    "scared": [
+      ".....kkkkkk.....",
+      "....kggggggk....",
+      "kkk.kggggggk.kkk",
+      "kpggkggggggkggpk",
+      ".kggggwggwggggk.",
+      "..kkggfggfggkk..",
+      "....kggggggk....",
+      "...kbbbbbbbbk...",
+      "..kbbbbbbbbbbk..",
+      "..kgbbbbbbbbgk..",
+      "..kbbbbbbbbbbk..",
+      "...kkkkkkkkkk...",
+      "...kk......kk..."
+    ]
+  }
+}

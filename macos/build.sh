@@ -6,7 +6,7 @@ APP=ZedPet.app
 rm -rf $APP
 mkdir -p $APP/Contents/MacOS $APP/Contents/Resources
 swiftc -O -swift-version 5 main.swift -o $APP/Contents/MacOS/ZedPet
-cp ../sprites/cat.json $APP/Contents/Resources/
+mkdir -p $APP/Contents/Resources/pets && cp ../sprites/*.json $APP/Contents/Resources/pets/
 cat > $APP/Contents/Info.plist <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

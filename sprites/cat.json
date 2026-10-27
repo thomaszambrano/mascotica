@@ -1,7 +1,8 @@
 {
+  "id": "cat",
+  "name": "Gatito",
   "width": 20,
   "height": 12,
-  "_info": "Cada letra es un pixel. '.' = transparente. Las letras se pintan con la paleta elegida.",
   "palettes": {
     "naranja": {
       "k": "#291F1A",
