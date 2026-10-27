@@ -1,18 +1,28 @@
 # 🐱 Mascotica
 
-Una mascota pixel art que camina por la parte de abajo de MATLAB mientras trabajas.
+Mascotas pixel art que caminan por la parte de abajo de tu editor mientras trabajas: **MATLAB en Windows** y **Zed en macOS**.
 
-**Mascotas disponibles:** 🐱 Gatita · 🟢 Grogu · 🤖 R2-D2 · ⚫ Darth Vader · 🕷️ Spider-Man · 🔴 Iron Man · 🟩 Dr. Doom
+| Mascota | Detalle |
+|---|---|
+| 🐱 Gatito | Rosado pastel en Windows, naranja en Mac |
+| 🟢 Grogu | Orejotas; cierra los ojos al dormir |
+| 🤖 R2-D2 | La cúpula gira al caminar; luz roja si se asusta |
+| ⚫ Darth Vader | Ojos rojos cuando se enoja |
+| 🕷️ Spider-Man | Levanta los brazos cuando está feliz |
+| 🔴 Iron Man | Prende los propulsores al saltar |
+| 🟩 Dr. Doom | Magia verde en las manos |
 
-- **Elige la tuya** desde el menú (clic derecho en el icono junto al reloj → **Mascota**). Se acuerda de tu elección.
-- **Haz clic en la mascota**: salta y te da un ♥
-- Parpadea, se sienta, corre, bosteza, se estira y a veces se duerme (zZz)
-- Solo aparece cuando MATLAB es la ventana activa; si cambias a otra app, se esconde
-- Cuando cierras MATLAB, ella también se va
+Todas parpadean, caminan, corren, se sientan, bostezan, se estiran y a veces se duermen (zZz). **Haz clic en la mascota** y salta con un ♥.
+
+**Contenido:** [Windows (MATLAB)](#-windows-matlab) · [macOS (Zed)](#-macos-zed) · [Para desarrolladores](#-para-desarrolladores)
 
 ---
 
-## Instalación (Windows + MATLAB) — 1 minuto
+## 🪟 Windows (MATLAB)
+
+**Requisitos:** Windows 10 u 11. No hay que instalar nada más: usa .NET Framework 4.8, que ya viene con Windows.
+
+### Opción A — Que aparezca cada vez que abres MATLAB (recomendada)
 
 Abre MATLAB, **copia todo este bloque**, pégalo en la **Command Window** y presiona Enter:
 
@@ -33,76 +43,158 @@ system(['start "" "' exe '" --con-matlab']);
 disp('🐱 Listo! Tu mascota aparecerá cada vez que abras MATLAB.')
 ```
 
-Esto hace tres cosas:
+Qué hace:
 
-1. Descarga la gatita en `C:\Users\<tu usuario>\MatlabPet\MatlabPet.exe`
-2. Agrega una línea a tu `startup.m` (el archivo que MATLAB ejecuta solo cada vez que abre), para que ella aparezca siempre
-3. La abre ahora mismo
+1. Descarga la mascota en `C:\Users\<tu usuario>\MatlabPet\MatlabPet.exe`.
+2. Agrega una línea a tu `startup.m` (el archivo que MATLAB ejecuta solo cada vez que abre) para que aparezca siempre.
+3. La abre ahora mismo.
 
-**¿Hay versión nueva?** Corre el mismo bloque otra vez: cierra la mascota, descarga la última versión y la vuelve a abrir (no duplica nada en tu `startup.m`).
+Con esta opción la mascota **solo se ve cuando MATLAB es la ventana activa** y **se cierra sola cuando cierras MATLAB**.
 
-> No hay que instalar nada más: usa .NET Framework 4.8, que ya viene con Windows 10 y 11.
+### Opción B — Correrla por tu cuenta, sin MATLAB
 
-### Menú de la gatita
+Abre **PowerShell** (tecla Windows → escribe `PowerShell` → Enter) y pega:
 
-Al lado del reloj de Windows (puede estar dentro de la flechita **^**) hay un icono de la gatita. Con **clic derecho** puedes:
+```powershell
+$dir = "$env:USERPROFILE\MatlabPet"
+New-Item -ItemType Directory -Force $dir | Out-Null
+Invoke-WebRequest https://github.com/thomaszambrano/mascotica/releases/latest/download/MatlabPet.exe -OutFile "$dir\MatlabPet.exe"
+Start-Process "$dir\MatlabPet.exe"
+```
 
-- **Mascota**: cambiar de personaje
+O descarga `MatlabPet.exe` a mano desde **[Releases](https://github.com/thomaszambrano/mascotica/releases/latest)** y hazle doble clic.
+
+> Si Windows dice *"Windows protegió tu PC"*: **Más información → Ejecutar de todas formas**. Sale porque el archivo no está firmado digitalmente.
+
+⚠️ Por defecto la mascota se esconde si MATLAB no está activo. Para verla en el escritorio: clic derecho en su icono junto al reloj → desmarca **Solo cuando MATLAB está activo**. Ahí caminará por la parte de abajo de la pantalla.
+
+### Comandos de Windows
+
+| Qué | Comando (PowerShell o CMD) |
+|---|---|
+| Abrir la mascota | `"%USERPROFILE%\MatlabPet\MatlabPet.exe"` |
+| Abrirla atada a MATLAB (se cierra al cerrar MATLAB) | `"%USERPROFILE%\MatlabPet\MatlabPet.exe" --con-matlab` |
+| Cerrarla | `taskkill /im MatlabPet.exe /f` |
+
+> En PowerShell usa `$env:USERPROFILE` en vez de `%USERPROFILE%` y pon `& ` antes de la ruta entre comillas: `& "$env:USERPROFILE\MatlabPet\MatlabPet.exe"`
+
+### Elegir mascota y menú
+
+Al lado del reloj de Windows (puede estar dentro de la flechita **^**) está el icono de tu mascota. **Clic izquierdo** = acariciar. **Clic derecho** abre el menú:
+
+- **Mascota** → elige el personaje. Se guarda para la próxima vez.
+- **Solo cuando MATLAB está activo**: desmárcalo para que se vea siempre.
 - **Dormir / Despertar**
 - **Acariciar**
-- **Solo cuando MATLAB está activo**: si lo desmarcas, se queda visible siempre
+- **Iniciar con Windows**: que arranque sola al prender el PC (no hace falta si usaste la Opción A).
 - **Salir**
 
----
+### Actualizar
 
-## Instalación manual (si prefieres no usar el bloque de arriba)
+Corre otra vez el bloque de la **Opción A** (o el de PowerShell de la Opción B). Cierra la mascota, descarga la última versión y la vuelve a abrir. No duplica nada en tu `startup.m`.
 
-1. Descarga `MatlabPet.exe` desde **[Releases](https://github.com/thomaszambrano/mascotica/releases/latest)** y guárdalo en `C:\Users\<tu usuario>\MatlabPet\`.
-   Si Windows dice *"Windows protegió tu PC"*: **Más información → Ejecutar de todas formas** (sale porque el archivo no está firmado).
-2. En MATLAB escribe `edit(fullfile(userpath, 'startup.m'))`, pega esto al final y guarda:
-   ```matlab
-   % Gatita
-   system('start "" "C:\Users\<tu usuario>\MatlabPet\MatlabPet.exe" --con-matlab');
-   ```
-3. Cierra y vuelve a abrir MATLAB.
+### Desinstalar
 
-## Desinstalar
+1. Clic derecho en el icono → **Salir**.
+2. En MATLAB: `edit(fullfile(userpath, 'startup.m'))` y borra las líneas de `% Gatita`.
+3. Si activaste **Iniciar con Windows**, desmárcalo antes de salir.
+4. Borra la carpeta `C:\Users\<tu usuario>\MatlabPet`.
 
-1. Clic derecho en el icono de la gatita → **Salir**
-2. En MATLAB: `edit(fullfile(userpath, 'startup.m'))` y borra las líneas de `% Gatita`
-3. Borra la carpeta `C:\Users\<tu usuario>\MatlabPet`
+### Problemas
 
-## Problemas
-
-- **No aparece**: haz clic dentro de la ventana de MATLAB (solo se muestra cuando MATLAB está activo).
-- **Darth Vader se ve muy oscuro**: es negro sobre MATLAB oscuro 😅, prueba otro personaje o el tema claro.
-- **Sale dos veces o no se va al cerrar MATLAB**: clic derecho en el icono → **Salir**. Si pasa seguido, revisa que la línea `% Gatita` no esté repetida en tu `startup.m`.
+- **No aparece**: haz clic dentro de la ventana de MATLAB (solo se muestra cuando MATLAB está activo), o desmarca *Solo cuando MATLAB está activo*.
+- **`websave` falla**: revisa tu conexión o descárgalo a mano desde [Releases](https://github.com/thomaszambrano/mascotica/releases/latest) y sigue la Opción B.
+- **Darth Vader casi no se ve**: es negro sobre MATLAB oscuro 😅. Prueba otro personaje o el tema claro.
+- **Sale dos veces o no se va al cerrar MATLAB**: clic derecho → **Salir**. Revisa que la línea `% Gatita` no esté repetida en tu `startup.m`.
 - **Queda flotando o tapa la barra de abajo**: avísale a quien te la regaló, es un número que se ajusta en el código 😉
 
 ---
 
-<details>
-<summary>Para desarrolladores: versión macOS (Zed) y cómo compilar</summary>
+## 🍎 macOS (Zed)
 
-- `sprites/*.json`: una mascota por archivo (una letra = un pixel, `.` = transparente), compartidas por ambas versiones. Para agregar una nueva basta con crear otro JSON con las mismas animaciones (`walk`, `idle`, `sleep`, `jump`, `happy`, `scared`…); si falta alguna, se usa la más parecida.
-- `windows/`: C# WinForms (.NET Framework 4.8). GitHub Actions compila el `.exe` y lo publica en Releases cuando se sube un tag `v*`.
-- `macos/`: versión para el editor Zed en Swift/AppKit (gato naranja).
+**Requisitos:** macOS 13+ y las herramientas de línea de comandos de Xcode (`xcode-select --install`).
 
-### macOS (Zed)
+### Instalar y abrir
 
 ```bash
-./macos/build.sh && open macos/ZedPet.app
-cp macos/zed-tasks.json ~/.config/zed/tasks.json   # tareas 🐱 en Zed (task: spawn)
+git clone https://github.com/thomaszambrano/mascotica.git
+cd mascotica
+./macos/build.sh                  # compila ZedPet.app e instala el comando `zedpet` en ~/.local/bin
+open macos/ZedPet.app
 ```
 
-- Parpadea, mueve la cola, bosteza, se estira, respira cuando duerme.
-- Da un saltito con ♪ cuando guardas archivos estando en Zed.
-- Comando `zedpet` (se instala en `~/.local/bin`):
-  - `zedpet run <comando>`: el gato se sienta a esperar mientras corre; ★ si termina bien, se asusta (!) si falla. Devuelve el mismo código de salida.
-  - `zedpet feliz | exito | error | trabajando | guardado | dormir | despertar`
-  - `zedpet mascota <cat | grogu | r2d2 | vader | spiderman | ironman | doom>` (o desde el menú 🐱 → Mascota)
+Aparece un 🐱 en la barra de menú de arriba con: **Mascota**, **Solo cuando Zed está activo**, **Dormir / Despertar**, **Acariciar** y **Salir**.
 
-</details>
+Para que arranque sola: **Ajustes del Sistema → General → Ítems de inicio** → agrega `macos/ZedPet.app`.
+
+### Comandos
+
+| Comando | Qué hace |
+|---|---|
+| `zedpet mascota <nombre>` | Cambia de mascota. Acepta el nombre como sea: `ironman`, `"Iron Man"`, `doom`, `"Dr. Doom"`, `vader`, `grogu`, `r2d2`, `spiderman`, `cat` |
+| `zedpet run <comando>` | Corre el comando; la mascota se sienta a esperar (···), salta con ★ si termina bien y se asusta (!) si falla. Devuelve el mismo código de salida |
+| `zedpet feliz` | Salta con ♥ |
+| `zedpet exito` / `zedpet error` | Celebra / se asusta |
+| `zedpet trabajando` | Se sienta a esperar |
+| `zedpet dormir` / `zedpet despertar` | Duerme / se despierta estirándose |
+
+Ejemplos:
+
+```bash
+zedpet mascota Iron Man
+zedpet run npm test
+zedpet run python3 entrenar.py
+```
+
+Además, da un saltito con ♪ de vez en cuando al **guardar archivos** mientras Zed está activo.
+
+### Tareas en Zed
+
+```bash
+mkdir -p ~/.config/zed && cp macos/zed-tasks.json ~/.config/zed/tasks.json
+```
+
+En Zed abre la paleta (`cmd-shift-p`) → **task: spawn** y elige:
+
+- **🐱 Correr archivo actual** (Python, JS, TS, shell o Swift según la extensión)
+- **🐱 npm test**
+- **🐱 npm run build**
+
+> Si ya tenías un `tasks.json`, copia las tareas dentro del tuyo en vez de reemplazarlo.
+
+---
+
+## 🛠 Para desarrolladores
+
+```
+sprites/   una mascota por archivo JSON, compartidas por Mac y Windows
+macos/     Swift/AppKit: main.swift, build.sh, zed-tasks.json
+windows/   C# WinForms (.NET Framework 4.8): Program.cs, MatlabPet.csproj
+.github/   GitHub Actions: compila ambas versiones y publica el .exe
+```
+
+### Agregar una mascota
+
+Crea `sprites/<id>.json` con `id`, `name`, `width`, `height`, `palettes`, `blink`, `animations` y `frames`. Cada frame es una lista de filas: una letra = un pixel del color de la paleta, `.` = transparente. Animaciones que se usan: `walk`, `run`, `idle`, `sit`, `sleep`, `yawn`, `stretch`, `jump`, `happy`, `scared`. Si falta alguna, se usa la más parecida.
+
+Mac la carga al recompilar (`./macos/build.sh`). En Windows queda embebida dentro del `.exe`.
+
+### Compilar Windows
+
+En un PC con Windows y el [.NET SDK 8](https://dotnet.microsoft.com/download):
+
+```powershell
+dotnet build windows/MatlabPet.csproj -c Release -o out
+.\out\MatlabPet.exe
+```
+
+### Publicar una versión
+
+```bash
+git tag v1.3 && git push origin v1.3
+```
+
+GitHub Actions compila el `.exe` y lo sube a **Releases**. El bloque de MATLAB siempre descarga la última.
 
 ---
 
