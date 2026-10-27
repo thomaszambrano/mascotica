@@ -1,0 +1,5 @@
+ZedPet.app/
+bin/
+obj/
+out/
+.DS_Store
