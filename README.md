@@ -73,7 +73,21 @@ Al lado del reloj de Windows (puede estar dentro de la flechita **^**) hay un ic
 <details>
 <summary>Para desarrolladores: versión macOS (Zed) y cómo compilar</summary>
 
+- `sprites/cat.json`: el dibujo y las animaciones del gato (una letra = un pixel), compartido por ambas versiones.
 - `windows/`: C# WinForms (.NET Framework 4.8). GitHub Actions compila el `.exe` y lo publica en Releases cuando se sube un tag `v*`.
-- `macos/`: versión para el editor Zed en Swift/AppKit (gato naranja). `./macos/build.sh && open macos/ZedPet.app`
+- `macos/`: versión para el editor Zed en Swift/AppKit (gato naranja).
+
+### macOS (Zed)
+
+```bash
+./macos/build.sh && open macos/ZedPet.app
+cp macos/zed-tasks.json ~/.config/zed/tasks.json   # tareas 🐱 en Zed (task: spawn)
+```
+
+- Parpadea, mueve la cola, bosteza, se estira, respira cuando duerme.
+- Da un saltito con ♪ cuando guardas archivos estando en Zed.
+- Comando `zedpet` (se instala en `~/.local/bin`):
+  - `zedpet run <comando>`: el gato se sienta a esperar mientras corre; ★ si termina bien, se asusta (!) si falla. Devuelve el mismo código de salida.
+  - `zedpet feliz | exito | error | trabajando | guardado | dormir | despertar`
 
 </details>

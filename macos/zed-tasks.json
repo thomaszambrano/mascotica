@@ -1,0 +1,19 @@
+[
+  {
+    "label": "🐱 Correr archivo actual",
+    "command": "zedpet run sh -c 'case \"$ZED_FILE\" in *.py) python3 \"$ZED_FILE\";; *.js|*.mjs) node \"$ZED_FILE\";; *.ts) npx tsx \"$ZED_FILE\";; *.sh) sh \"$ZED_FILE\";; *.swift) swift \"$ZED_FILE\";; *) echo \"No sé correr $ZED_FILE\"; exit 1;; esac'"
+  },
+  {
+    "label": "🐱 npm test",
+    "command": "zedpet run npm test"
+  },
+  {
+    "label": "🐱 npm run build",
+    "command": "zedpet run npm run build"
+  },
+  {
+    "label": "🐱 Acariciar",
+    "command": "zedpet feliz",
+    "hide": "always"
+  }
+]

@@ -1,0 +1,307 @@
+{
+  "width": 20,
+  "height": 12,
+  "_info": "Cada letra es un pixel. '.' = transparente. Las letras se pintan con la paleta elegida.",
+  "palettes": {
+    "naranja": {
+      "k": "#291F1A",
+      "o": "#F29940",
+      "w": "#FFF5E6",
+      "p": "#FA8CA6",
+      "e": "#1A734D"
+    },
+    "rosado": {
+      "k": "#141414",
+      "o": "#FFC0D6",
+      "w": "#FFF0F6",
+      "p": "#E8608C",
+      "e": "#141414"
+    }
+  },
+  "blink": {
+    "e": "k"
+  },
+  "animations": {
+    "walk": {
+      "frames": [
+        "walk1",
+        "walk2",
+        "walk3",
+        "walk4"
+      ],
+      "ticksPerFrame": 5
+    },
+    "run": {
+      "frames": [
+        "walk1",
+        "walk2",
+        "walk3",
+        "walk4"
+      ],
+      "ticksPerFrame": 2
+    },
+    "idle": {
+      "frames": [
+        "idle",
+        "idle_tail"
+      ],
+      "ticksPerFrame": 14
+    },
+    "sit": {
+      "frames": [
+        "sit",
+        "sit_tail"
+      ],
+      "ticksPerFrame": 18
+    },
+    "sleep": {
+      "frames": [
+        "sleep",
+        "sleep_breath"
+      ],
+      "ticksPerFrame": 40
+    },
+    "yawn": {
+      "frames": [
+        "yawn"
+      ],
+      "ticksPerFrame": 1
+    },
+    "stretch": {
+      "frames": [
+        "stretch"
+      ],
+      "ticksPerFrame": 1
+    },
+    "jump": {
+      "frames": [
+        "jump"
+      ],
+      "ticksPerFrame": 1
+    },
+    "happy": {
+      "frames": [
+        "happy"
+      ],
+      "ticksPerFrame": 1
+    },
+    "scared": {
+      "frames": [
+        "scared"
+      ],
+      "ticksPerFrame": 1
+    }
+  },
+  "frames": {
+    "walk1": [
+      "..............k...k.",
+      ".............kok.kok",
+      ".k...........koooook",
+      ".k...........kooeoek",
+      "..k..........kooowpk",
+      "..k..kkkkkkkkkoooook",
+      "...kkooooooooooooook",
+      "....koooooooooooook.",
+      "....kowwwwwwwwwwok..",
+      "....kkkkkkkkkkkkk...",
+      "....kk...kk..kk..kk.",
+      "....kk...kk..kk..kk."
+    ],
+    "walk2": [
+      "..............k...k.",
+      ".............kok.kok",
+      ".k...........koooook",
+      ".k...........kooeoek",
+      "..k..........kooowpk",
+      "..k..kkkkkkkkkoooook",
+      "...kkooooooooooooook",
+      "....koooooooooooook.",
+      "....kowwwwwwwwwwok..",
+      "....kkkkkkkkkkkkk...",
+      ".....kk.kk....kk.kk.",
+      "......kkk......kkk.."
+    ],
+    "walk3": [
+      "..............k...k.",
+      ".............kok.kok",
+      "...k.........koooook",
+      "..k..........kooeoek",
+      "..k..........kooowpk",
+      "..k..kkkkkkkkkoooook",
+      "...kkooooooooooooook",
+      "....koooooooooooook.",
+      "....kowwwwwwwwwwok..",
+      "....kkkkkkkkkkkkk...",
+      "....kk...kk..kk..kk.",
+      "....kk...kk..kk..kk."
+    ],
+    "walk4": [
+      "..............k...k.",
+      ".............kok.kok",
+      "...k.........koooook",
+      "..k..........kooeoek",
+      "..k..........kooowpk",
+      "..k..kkkkkkkkkoooook",
+      "...kkooooooooooooook",
+      "....koooooooooooook.",
+      "....kowwwwwwwwwwok..",
+      "....kkkkkkkkkkkkk...",
+      "...kk....kk.kk....kk",
+      "..kk.....kk..kk...kk"
+    ],
+    "idle": [
+      "..............k...k.",
+      ".............kok.kok",
+      ".k...........koooook",
+      ".k...........kooeoek",
+      "..k..........kooowpk",
+      "..k..kkkkkkkkkoooook",
+      "...kkooooooooooooook",
+      "....koooooooooooook.",
+      "....kowwwwwwwwwwok..",
+      "....kkkkkkkkkkkkk...",
+      "....kk...kk..kk..kk.",
+      "....kk...kk..kk..kk."
+    ],
+    "idle_tail": [
+      "..............k...k.",
+      ".............kok.kok",
+      "...k.........koooook",
+      "..k..........kooeoek",
+      "..k..........kooowpk",
+      "..k..kkkkkkkkkoooook",
+      "...kkooooooooooooook",
+      "....koooooooooooook.",
+      "....kowwwwwwwwwwok..",
+      "....kkkkkkkkkkkkk...",
+      "....kk...kk..kk..kk.",
+      "....kk...kk..kk..kk."
+    ],
+    "sit": [
+      "....................",
+      "..............k...k.",
+      ".............kok.kok",
+      ".k...........koooook",
+      ".k...........kooeoek",
+      "..k..........kooowpk",
+      "..k..kkkkkkkkkoooook",
+      "...kkooooooooooooook",
+      "....koooooooooooook.",
+      "....kowwwwwwwwwwok..",
+      "....kkkkkkkkkkkkk...",
+      "....kk...kk..kk..kk."
+    ],
+    "sit_tail": [
+      "....................",
+      "..............k...k.",
+      ".............kok.kok",
+      "...k.........koooook",
+      "..k..........kooeoek",
+      "..k..........kooowpk",
+      "..k..kkkkkkkkkoooook",
+      "...kkooooooooooooook",
+      "....koooooooooooook.",
+      "....kowwwwwwwwwwok..",
+      "....kkkkkkkkkkkkk...",
+      "....kk...kk..kk..kk."
+    ],
+    "sleep": [
+      "....................",
+      "....................",
+      "..............k...k.",
+      ".............kok.kok",
+      ".k...........koooook",
+      ".k...........kookokk",
+      "..k..........kooowpk",
+      "..k..kkkkkkkkkoooook",
+      "...kkooooooooooooook",
+      "....koooooooooooook.",
+      "....kowwwwwwwwwwok..",
+      "....kkkkkkkkkkkkk..."
+    ],
+    "sleep_breath": [
+      "....................",
+      "..............k...k.",
+      ".............kok.kok",
+      ".k...........koooook",
+      ".k...........kookokk",
+      "..k..........kooowpk",
+      "..k..kkkkkkkkkoooook",
+      "...kkooooooooooooook",
+      "....koooooooooooook.",
+      "....koooooooooooook.",
+      "....kowwwwwwwwwwok..",
+      "....kkkkkkkkkkkkk..."
+    ],
+    "yawn": [
+      "..............k...k.",
+      ".............kok.kok",
+      "...k.........koooook",
+      "..k..........kookokk",
+      "..k..........koopppk",
+      "..k..kkkkkkkkkoooook",
+      "...kkooooooooooooook",
+      "....koooooooooooook.",
+      "....kowwwwwwwwwwok..",
+      "....kkkkkkkkkkkkk...",
+      "....kk...kk..kk..kk.",
+      "....kk...kk..kk..kk."
+    ],
+    "stretch": [
+      "..k.................",
+      "..k...........k...k.",
+      "..k..........kok.kok",
+      "...k.........koooook",
+      "...k.........kooeoek",
+      "...k.kkkkkkkkkooowpk",
+      "...kkoooooookkoooook",
+      "....kooooooooooooook",
+      "....kowwwwwwooooook.",
+      "....kkkkkkkkwwwwok..",
+      "....kk...kk.kkkkk...",
+      "....kk...kk..kk..kk."
+    ],
+    "jump": [
+      "..............k...k.",
+      ".............kok.kok",
+      "...k.........koooook",
+      "..k..........kooeoek",
+      "..k..........kooowpk",
+      "..k..kkkkkkkkkoooook",
+      "...kkooooooooooooook",
+      "....koooooooooooook.",
+      "....kowwwwwwwwwwok..",
+      "....kkkkkkkkkkkkk...",
+      "...kk....kk.kk....kk",
+      "..kk.....kk..kk...kk"
+    ],
+    "happy": [
+      "..k...........k...k.",
+      "..k..........kok.kok",
+      "..k..........koooook",
+      "...k.........kookokk",
+      "...k.........kooowpk",
+      "...k.kkkkkkkkkoooook",
+      "...kkooooooooooooook",
+      "....koooooooooooook.",
+      "....kowwwwwwwwwwok..",
+      "....kkkkkkkkkkkkk...",
+      "...kk....kk.kk....kk",
+      "..kk.....kk..kk...kk"
+    ],
+    "scared": [
+      "..k...........k...k.",
+      "..k..........kok.kok",
+      "..k..........koooook",
+      "...k.........koowowk",
+      "...k.........kooowpk",
+      "...k.kkkkkkkkkoooook",
+      "...kkooooooooooooook",
+      "....koooooooooooook.",
+      "....kowwwwwwwwwwok..",
+      "....kkkkkkkkkkkkk...",
+      "...kk....kk.kk....kk",
+      "..kk.....kk..kk...kk"
+    ]
+  }
+}
