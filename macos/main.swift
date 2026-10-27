@@ -211,8 +211,15 @@ final class Pet {
 
     func handle(_ event: String) {
         if event.hasPrefix("mascota:") {
-            let id = String(event.dropFirst("mascota:".count))
-            if let s = skins.first(where: { $0.sheet.id == id }) { skin = s; handle("feliz") }
+            // Acepta el id o el nombre como sea que se escriba: "Iron Man", "ironman", "Dr. Doom"…
+            let norm = { (s: String) in s.lowercased().filter { $0.isLetter || $0.isNumber } }
+            let wanted = norm(String(event.dropFirst("mascota:".count)))
+            if let s = skins.first(where: { norm($0.sheet.id) == wanted || norm($0.sheet.name) == wanted }) {
+                skin = s
+                handle("feliz")
+            } else {
+                say("?", .systemOrange, ticks: 40)
+            }
             return
         }
         switch event {
