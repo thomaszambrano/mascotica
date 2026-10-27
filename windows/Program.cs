@@ -12,14 +12,14 @@ using Microsoft.Win32;
 static class Program
 {
     [STAThread]
-    static void Main()
+    static void Main(string[] args)
     {
         using (var mutex = new Mutex(true, "MatlabPet.SingleInstance", out bool first))
         {
             if (!first) return; // ya hay un gato corriendo
             Native.SetProcessDPIAware();
             Application.EnableVisualStyles();
-            Application.Run(new PetForm());
+            Application.Run(new PetForm(args.Contains("--con-matlab")));
         }
     }
 }
@@ -77,11 +77,11 @@ class PetForm : Form
 
     static readonly Dictionary<char, SolidBrush> Palette = new Dictionary<char, SolidBrush>
     {
-        ['k'] = new SolidBrush(Color.FromArgb(41, 31, 26)),
-        ['o'] = new SolidBrush(Color.FromArgb(242, 153, 64)),
-        ['w'] = new SolidBrush(Color.FromArgb(255, 245, 230)),
-        ['p'] = new SolidBrush(Color.FromArgb(250, 140, 166)),
-        ['e'] = new SolidBrush(Color.FromArgb(26, 115, 77)),
+        ['k'] = new SolidBrush(Color.FromArgb(20, 20, 20)),    // contorno negro
+        ['o'] = new SolidBrush(Color.FromArgb(255, 192, 214)), // rosado pastel
+        ['w'] = new SolidBrush(Color.FromArgb(255, 240, 246)),
+        ['p'] = new SolidBrush(Color.FromArgb(232, 96, 140)),  // nariz
+        ['e'] = new SolidBrush(Color.FromArgb(20, 20, 20)),
     };
 
     static readonly string[] ProcessNames = { "MATLAB", "MATLABWindow" };
@@ -91,6 +91,8 @@ class PetForm : Form
     readonly Random rnd = new Random();
     readonly int ownPid = Process.GetCurrentProcess().Id;
     readonly NotifyIcon tray;
+    readonly bool exitWithMatlab;
+    bool seenMatlab;
     HashSet<int> matlabPids = new HashSet<int>();
     IntPtr target;
     float x = 200, jumpY, vy, speed;
@@ -99,8 +101,9 @@ class PetForm : Form
     bool right = true, onlyWithMatlab = true, forcedSleep;
     string frameName = "walk1", bubble;
 
-    public PetForm()
+    public PetForm(bool exitWithMatlab)
     {
+        this.exitWithMatlab = exitWithMatlab;
         float dpi;
         using (var g = CreateGraphics()) dpi = g.DpiX / 96f;
         s = Math.Max(2, (int)Math.Round(3 * dpi));
@@ -127,8 +130,8 @@ class PetForm : Form
         menu.Items.Add("Acariciar", null, (_, __) => Pet());
         menu.Items.Add(startupItem);
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("Salir", null, (_, __) => { tray.Visible = false; Application.Exit(); });
-        tray = new NotifyIcon { Icon = TrayIcon(), Text = "Gatito de MATLAB", ContextMenuStrip = menu, Visible = true };
+        menu.Items.Add("Salir", null, (_, __) => Quit());
+        tray = new NotifyIcon { Icon = TrayIcon(), Text = "Gatita de MATLAB", ContextMenuStrip = menu, Visible = true };
         tray.MouseClick += (_, e) => { if (e.Button == MouseButtons.Left) Pet(); };
 
         var timer = new System.Windows.Forms.Timer { Interval = 33 };
@@ -172,6 +175,12 @@ class PetForm : Form
         }
     }
 
+    void Quit()
+    {
+        tray.Visible = false;
+        Application.Exit();
+    }
+
     void Pet()
     {
         forcedSleep = false;
@@ -190,6 +199,9 @@ class PetForm : Form
     {
         var procs = ProcessNames.SelectMany(Process.GetProcessesByName).ToList();
         matlabPids = new HashSet<int>(procs.Select(p => p.Id));
+        // Lanzado desde startup.m: se va a dormir de verdad cuando MATLAB se cierra
+        if (matlabPids.Count > 0) seenMatlab = true;
+        else if (exitWithMatlab && seenMatlab) Quit();
         if (target == IntPtr.Zero)
             target = procs.Select(p => p.MainWindowHandle).FirstOrDefault(h => h != IntPtr.Zero);
         procs.ForEach(p => p.Dispose());
@@ -198,6 +210,7 @@ class PetForm : Form
     void UpdatePet()
     {
         if (tick++ % 30 == 0) RefreshMatlab();
+        if (IsDisposed) return;
 
         var fg = Native.GetForegroundWindow();
         Native.GetWindowThreadProcessId(fg, out uint fgPid);
