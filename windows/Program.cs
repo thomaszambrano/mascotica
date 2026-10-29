@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -15,15 +17,38 @@ using Microsoft.Win32;
 static class Program
 {
     [STAThread]
+    public const string PipeName = "MatlabPet.Events";
+
+    // `MatlabPet.exe mascota grogu` → "mascota:grogu", igual que `zedpet` en Mac
     static void Main(string[] args)
     {
+        var words = args.Where(a => a != "--con-matlab").ToArray();
+        var ev = words.Length == 0 ? null : words.Length == 1 ? words[0] : $"{words[0]}:{string.Join(" ", words.Skip(1))}";
         using (var mutex = new Mutex(true, "MatlabPet.SingleInstance", out bool first))
         {
-            if (!first) return; // ya hay una mascota corriendo
+            if (!first)
+            {
+                // Ya hay una mascota corriendo: le pasa el comando y le presta el foco por si abre el selector
+                if (ev != null) { Native.AllowSetForegroundWindow(-1 /* ASFW_ANY */); Send(ev); }
+                return;
+            }
             Native.SetProcessDPIAware();
             Application.EnableVisualStyles();
-            Application.Run(new PetForm(args.Contains("--con-matlab")));
+            Application.Run(new PetForm(args.Contains("--con-matlab"), ev));
         }
+    }
+
+    static void Send(string ev)
+    {
+        try
+        {
+            using (var pipe = new NamedPipeClientStream(".", PipeName, PipeDirection.Out))
+            {
+                pipe.Connect(2000);
+                using (var w = new StreamWriter(pipe)) w.WriteLine(ev);
+            }
+        }
+        catch (Exception) { } // si la mascota se está cerrando, no hay a quién avisarle
     }
 }
 
@@ -37,6 +62,7 @@ static class Native
     [DllImport("user32.dll")] public static extern bool IsWindow(IntPtr hWnd);
     [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr hWnd);
     [DllImport("user32.dll")] public static extern bool IsIconic(IntPtr hWnd);
+    [DllImport("user32.dll")] public static extern bool AllowSetForegroundWindow(int pid);
     [DllImport("dwmapi.dll")] public static extern int DwmGetWindowAttribute(IntPtr hWnd, int attr, out RECT r, int size);
 
     // Sin los bordes invisibles de Windows 10/11
@@ -99,6 +125,18 @@ class Skin
         return a.frames[t / Math.Max(a.ticksPerFrame, 1) % a.frames.Length];
     }
 
+    /// Dibujo cuadrado de la mascota quieta, un pixel por celda (icono y selector)
+    public Bitmap Preview()
+    {
+        var rows = Sheet.frames[Frame("idle", 0)];
+        int size = Math.Max(Sheet.width, Sheet.height), ox = (size - Sheet.width) / 2, oy = (size - Sheet.height) / 2;
+        var bmp = new Bitmap(size, size);
+        for (int y = 0; y < rows.Length; y++)
+            for (int x = 0; x < rows[y].Length; x++)
+                if (Palette.TryGetValue(rows[y][x], out var b)) bmp.SetPixel(x + ox, y + oy, b.Color);
+        return bmp;
+    }
+
     public static List<Skin> LoadAll()
     {
         var asm = Assembly.GetExecutingAssembly();
@@ -143,7 +181,7 @@ class PetForm : Form
     string anim = "walk", frameName = "walk1", bubble;
     Brush bubbleBrush = Brushes.HotPink;
 
-    public PetForm(bool exitWithMatlab)
+    public PetForm(bool exitWithMatlab, string firstEvent = null)
     {
         this.exitWithMatlab = exitWithMatlab;
         float dpi;
@@ -160,7 +198,7 @@ class PetForm : Form
         StartPosition = FormStartPosition.Manual;
         BackColor = TransparencyKey = Color.Magenta;
         DoubleBuffered = true;
-        MouseDown += (_, __) => OnEvent("feliz");
+        MouseDown += (_, e) => { if (e.Button == MouseButtons.Left) OnEvent("feliz"); };
 
         var menu = new ContextMenuStrip();
         petsMenu = new ToolStripMenuItem("Mascota");
@@ -174,6 +212,7 @@ class PetForm : Form
         var startupItem = new ToolStripMenuItem("Iniciar con Windows") { Checked = StartupEnabled, CheckOnClick = true };
         startupItem.CheckedChanged += (_, __) => SetStartup(startupItem.Checked);
         menu.Items.Add(petsMenu);
+        menu.Items.Add("Elegir mascota…", null, (_, __) => ShowPicker());
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(onlyItem);
         menu.Items.Add("Dormir / Despertar", null, (_, __) => OnEvent(forcedSleep ? "despertar" : "dormir"));
@@ -183,6 +222,9 @@ class PetForm : Form
         menu.Items.Add("Salir", null, (_, __) => Quit());
         tray = new NotifyIcon { Text = "Mascota de MATLAB", ContextMenuStrip = menu, Visible = true };
         tray.MouseClick += (_, e) => { if (e.Button == MouseButtons.Left) OnEvent("feliz"); };
+        tray.MouseDoubleClick += (_, __) => ShowPicker();
+        ContextMenuStrip = menu; // clic derecho sobre la mascota abre el mismo menú
+        MouseDoubleClick += (_, __) => ShowPicker();
 
         string saved;
         using (var k = Registry.CurrentUser.OpenSubKey(SettingsKey)) saved = k?.GetValue("pet") as string;
@@ -191,6 +233,38 @@ class PetForm : Form
         var timer = new System.Windows.Forms.Timer { Interval = 33 };
         timer.Tick += (_, __) => UpdatePet();
         timer.Start();
+
+        new Thread(ListenForCommands) { IsBackground = true }.Start();
+        if (firstEvent != null) Shown += (_, __) => OnEvent(firstEvent);
+    }
+
+    PetPicker picker;
+
+    // Mini menú con todas las mascotas: por si el comando no reconoce el nombre o los menús fallan
+    void ShowPicker()
+    {
+        if (picker == null || picker.IsDisposed)
+            picker = new PetPicker(skins, skin, k => OnEvent("mascota:" + k.Sheet.id));
+        picker.Show();
+        picker.Activate();
+    }
+
+    // Recibe los comandos que manda `MatlabPet.exe <comando>` desde la terminal o MATLAB
+    void ListenForCommands()
+    {
+        while (true)
+        {
+            try
+            {
+                using (var pipe = new NamedPipeServerStream(Program.PipeName, PipeDirection.In))
+                {
+                    pipe.WaitForConnection();
+                    var ev = new StreamReader(pipe).ReadLine();
+                    if (ev != null && IsHandleCreated) BeginInvoke((Action)(() => OnEvent(ev)));
+                }
+            }
+            catch (Exception) { Thread.Sleep(500); }
+        }
     }
 
     // Que no robe el foco a MATLAB ni salga en Alt+Tab
@@ -214,16 +288,7 @@ class PetForm : Form
         using (var key = Registry.CurrentUser.CreateSubKey(SettingsKey)) key.SetValue("pet", k.Sheet.id);
     }
 
-    static Icon TrayIcon(Skin k)
-    {
-        var rows = k.Sheet.frames[k.Frame("idle", 0)];
-        int size = Math.Max(k.Sheet.width, k.Sheet.height), ox = (size - k.Sheet.width) / 2, oy = (size - k.Sheet.height) / 2;
-        var bmp = new Bitmap(size, size);
-        for (int y = 0; y < rows.Length; y++)
-            for (int x = 0; x < rows[y].Length; x++)
-                if (k.Palette.TryGetValue(rows[y][x], out var b)) bmp.SetPixel(x + ox, y + oy, b.Color);
-        return Icon.FromHandle(bmp.GetHicon());
-    }
+    static Icon TrayIcon(Skin k) => Icon.FromHandle(k.Preview().GetHicon());
 
     static bool StartupEnabled
     {
@@ -251,15 +316,21 @@ class PetForm : Form
     {
         if (ev.StartsWith("mascota:"))
         {
-            var k = skins.FirstOrDefault(x => x.Sheet.id == ev.Substring("mascota:".Length));
+            // Acepta el id o el nombre como sea que se escriba: "Iron Man", "ironman", "Dr. Doom"…
+            string Norm(string t) => new string(t.ToLowerInvariant().Where(char.IsLetterOrDigit).ToArray());
+            var wanted = Norm(ev.Substring("mascota:".Length));
+            var k = skins.FirstOrDefault(x => Norm(x.Sheet.id) == wanted || Norm(x.Sheet.name) == wanted);
             if (k != null) { SetSkin(k); OnEvent("feliz"); }
+            else { Say("?", Brushes.Orange, 40); ShowPicker(); } // nombre que no conoce: que la elija con el mouse
             return;
         }
-        switch (ev)
+        switch (ev.ToLowerInvariant())
         {
-            case "feliz": forcedSleep = false; Jump(7, "happy", "♥", Brushes.HotPink); break;
-            case "exito": forcedSleep = false; Jump(8, "happy", "★", Brushes.Gold); break;
-            case "error": forcedSleep = false; Jump(5, "scared", "!", Brushes.Red, right ? -2 : 2, Mood.Idle); break;
+            case "mascota": case "mascotas": case "elegir": case "menu": ShowPicker(); break;
+            case "feliz": case "acariciar": forcedSleep = false; Jump(7, "happy", "♥", Brushes.HotPink); break;
+            case "exito": case "ok": forcedSleep = false; Jump(8, "happy", "★", Brushes.Gold); break;
+            case "error": case "fallo": forcedSleep = false; Jump(5, "scared", "!", Brushes.Red, right ? -2 : 2, Mood.Idle); break;
+            case "salir": Quit(); break;
             case "dormir": forcedSleep = true; break;
             case "despertar": forcedSleep = false; Play("stretch", 45, Mood.Walking); break;
         }
@@ -435,5 +506,53 @@ class PetForm : Form
         g.TextRenderingHint = TextRenderingHint.SingleBitPerPixelGridFit;
         using (var font = new Font("Segoe UI", 11, FontStyle.Bold))
             g.DrawString(bubble, font, bubbleBrush, right ? Width - 8 * s : s, 0);
+    }
+}
+
+// MARK: - Selector: una ventanita con un botón por mascota
+
+class PetPicker : Form
+{
+    public PetPicker(List<Skin> skins, Skin current, Action<Skin> choose)
+    {
+        Text = "Elige tu mascota";
+        FormBorderStyle = FormBorderStyle.FixedToolWindow;
+        StartPosition = FormStartPosition.CenterScreen;
+        TopMost = true;
+        ShowInTaskbar = false;
+        AutoSize = true;
+        AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        KeyPreview = true;
+        KeyDown += (_, e) => { if (e.KeyCode == Keys.Escape) Close(); };
+
+        var grid = new FlowLayoutPanel { AutoSize = true, MaximumSize = new Size(460, 0), Padding = new Padding(8) };
+        foreach (var k in skins)
+        {
+            var b = new Button
+            {
+                Text = k.Sheet.name,
+                Image = Pixelated(k.Preview(), 48),
+                TextImageRelation = TextImageRelation.ImageAboveText,
+                Size = new Size(100, 90),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = k == current ? Color.MistyRose : SystemColors.Control,
+            };
+            b.Click += (_, __) => { choose(k); Close(); };
+            grid.Controls.Add(b);
+        }
+        Controls.Add(grid);
+    }
+
+    // Agranda sin suavizar, para que el pixel art no se vea borroso
+    static Bitmap Pixelated(Bitmap src, int size)
+    {
+        var bmp = new Bitmap(size, size);
+        using (var g = Graphics.FromImage(bmp))
+        {
+            g.InterpolationMode = InterpolationMode.NearestNeighbor;
+            g.PixelOffsetMode = PixelOffsetMode.Half;
+            g.DrawImage(src, 0, 0, size, size);
+        }
+        return bmp;
     }
 }

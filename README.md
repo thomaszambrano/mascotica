@@ -75,14 +75,22 @@ O descarga `MatlabPet.exe` a mano desde **[Releases](https://github.com/thomasza
 | Abrir la mascota | `"%USERPROFILE%\MatlabPet\MatlabPet.exe"` |
 | Abrirla atada a MATLAB (se cierra al cerrar MATLAB) | `"%USERPROFILE%\MatlabPet\MatlabPet.exe" --con-matlab` |
 | Cerrarla | `taskkill /im MatlabPet.exe /f` |
+| Cambiar de mascota | `"%USERPROFILE%\MatlabPet\MatlabPet.exe" mascota grogu` (acepta `"Iron Man"`, `vader`, `doom`, `r2d2`, `spiderman`, `cat`…) |
+| Abrir el mini menú para elegirla con el mouse | `… MatlabPet.exe mascota` (sin nombre). También se abre solo si el nombre no existe |
+| Saltar con ♥ / celebrar ★ / asustarse ! | `… MatlabPet.exe feliz` · `… exito` · `… error` |
+| Dormir / despertar | `… MatlabPet.exe dormir` · `… despertar` |
+| Cerrarla con calma | `… MatlabPet.exe salir` |
 
-> En PowerShell usa `$env:USERPROFILE` en vez de `%USERPROFILE%` y pon `& ` antes de la ruta entre comillas: `& "$env:USERPROFILE\MatlabPet\MatlabPet.exe"`
+> En PowerShell usa `$env:USERPROFILE` en vez de `%USERPROFILE%` y pon `& ` antes de la ruta entre comillas: `& "$env:USERPROFILE\MatlabPet\MatlabPet.exe" mascota grogu`
+>
+> Desde MATLAB: `system(['start "" "' fullfile(getenv('USERPROFILE'),'MatlabPet','MatlabPet.exe') '" mascota grogu']);`. Si la mascota no estaba abierta, el comando la abre con esa mascota.
 
 ### Elegir mascota y menú
 
-Al lado del reloj de Windows (puede estar dentro de la flechita **^**) está el icono de tu mascota. **Clic izquierdo** = acariciar. **Clic derecho** abre el menú:
+**Clic derecho sobre la mascota** o sobre su icono junto al reloj de Windows (puede estar dentro de la flechita **^**) abre el menú. **Clic izquierdo** = acariciar. En el menú:
 
 - **Mascota** → elige el personaje. Se guarda para la próxima vez.
+- **Elegir mascota…** → abre una ventanita con todas las mascotas para elegirla con un clic. También se abre con **doble clic** en la mascota o en su icono.
 - **Solo cuando MATLAB está activo**: desmárcalo para que se vea siempre.
 - **Dormir / Despertar**
 - **Acariciar**
