@@ -16,10 +16,10 @@ using Microsoft.Win32;
 
 static class Program
 {
-    [STAThread]
     public const string PipeName = "MatlabPet.Events";
 
     // `MatlabPet.exe mascota grogu` → "mascota:grogu", igual que `zedpet` en Mac
+    [STAThread]
     static void Main(string[] args)
     {
         var words = args.Where(a => a != "--con-matlab").ToArray();
